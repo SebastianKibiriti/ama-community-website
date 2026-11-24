@@ -19,3 +19,5 @@ services:
         sync: false
       - key: N8N_WEBHOOK_URL
         sync: false
+      - key: N8N_WEBHOOK_AUTH_TOKEN
+        sync: false
