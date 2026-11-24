@@ -2,7 +2,7 @@ services:
   - type: web
     name: ama-community-whatsapp-receiver
     runtime: node
-    plan: starter
+    plan: free
     region: singapore
     rootDir: webhook-receiver
     buildCommand: npm install
