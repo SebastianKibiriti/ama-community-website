@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: ama-community-whatsapp-receiver
+    runtime: node
+    plan: starter
+    region: singapore
+    rootDir: webhook-receiver
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: WEBHOOK_PATH
+        value: /webhook/whatsapp
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: N8N_WEBHOOK_URL
+        sync: false
