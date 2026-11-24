@@ -6,10 +6,11 @@ const PORT = Number(process.env.PORT || 3000);
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
 const APP_SECRET = process.env.META_APP_SECRET;
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
+const N8N_WEBHOOK_AUTH_TOKEN = process.env.N8N_WEBHOOK_AUTH_TOKEN;
 const WEBHOOK_PATH = process.env.WEBHOOK_PATH || "/webhook/whatsapp";
 
-if (!VERIFY_TOKEN || !APP_SECRET || !N8N_WEBHOOK_URL) {
-  console.error("Missing one or more required environment variables: WHATSAPP_VERIFY_TOKEN, META_APP_SECRET, N8N_WEBHOOK_URL.");
+if (!VERIFY_TOKEN || !APP_SECRET || !N8N_WEBHOOK_URL || !N8N_WEBHOOK_AUTH_TOKEN) {
+  console.error("Missing one or more required environment variables: WHATSAPP_VERIFY_TOKEN, META_APP_SECRET, N8N_WEBHOOK_URL, N8N_WEBHOOK_AUTH_TOKEN.");
   process.exit(1);
 }
 
@@ -57,19 +58,22 @@ app.post(WEBHOOK_PATH, express.raw({ type: "application/json", limit: "2mb" }), 
   try {
     const downstream = await fetch(N8N_WEBHOOK_URL, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        "x-ama-webhook-secret": N8N_WEBHOOK_AUTH_TOKEN
+      },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(8000)
     });
 
     if (!downstream.ok) {
-      console.error(`n8n returned HTTP ${downstream.status}; allowing Meta to retry.`);
+      console.error(`n8n gateway returned HTTP ${downstream.status}; allowing Meta to retry.`);
       return res.sendStatus(503);
     }
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error("Could not forward event to n8n:", error.message);
+    console.error("Could not forward event to the local webhook gateway:", error.message);
     return res.sendStatus(503);
   }
 });
